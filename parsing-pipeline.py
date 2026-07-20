@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-import argparse
 import hashlib
 import json
 import logging
@@ -9,10 +7,17 @@ import unicodedata
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Iterable, Iterator
-
 import fitz  # PyMuPDF
 
 LOGGER = logging.getLogger("pdf_pipeline")
+
+INPUT_DIRECTORY = Path(r"data\input")
+OUTPUT_DIRECTORY = Path(r"data\output")
+
+CHUNK_SIZE = 2_000
+CHUNK_OVERLAP = 250
+SEARCH_SUBFOLDERS = True
+VERBOSE_LOGGING = False
 
 @dataclass(frozen=True)
 class PageText:
@@ -526,68 +531,20 @@ def run_pipeline(
         output_directory,
     )
 
-
-def build_argument_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Parse PDFs, chunk text, and extract embedded images."
-    )
-    parser.add_argument(
-        "input",
-        type=Path,
-        help="A PDF file or a directory containing PDF files.",
-    )
-    parser.add_argument(
-        "--output",
-        type=Path,
-        default=Path("output"),
-        help="Output directory. Default: ./output",
-    )
-    parser.add_argument(
-        "--chunk-size",
-        type=int,
-        default=2_000,
-        help="Maximum approximate characters per chunk. Default: 2000",
-    )
-    parser.add_argument(
-        "--overlap",
-        type=int,
-        default=250,
-        help="Approximate trailing overlap in characters. Default: 250",
-    )
-    # parser.add_argument(
-    #     "--recursive",
-    #     action="store_true",
-    #     help="Search nested directories for PDFs.",
-    # )
-    parser.add_argument(
-        "--no-recursive",
-        action="store_true",
-        help="Do not search nested directories for PDF files.",
-    )
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Enable debug logging.",
-    )
-    return parser
-
-
 def main() -> None:
-    parser = build_argument_parser()
-    args = parser.parse_args()
-
     logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.INFO,
+        level=logging.DEBUG if VERBOSE_LOGGING else logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s",
     )
 
     run_pipeline(
-        input_path=args.input,
-        output_directory=args.output,
-        chunk_size=args.chunk_size,
-        overlap=args.overlap,
-        recursive=not args.no_recursive,
+        input_path=INPUT_DIRECTORY,
+        output_directory=OUTPUT_DIRECTORY,
+        chunk_size=CHUNK_SIZE,
+        overlap=CHUNK_OVERLAP,
+        recursive=SEARCH_SUBFOLDERS,
     )
+
 
 if __name__ == "__main__":
     main()
