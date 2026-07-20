@@ -1,1 +1,2 @@
 output/chunks.jsonl filter=lfs diff=lfs merge=lfs -text
+data/output/chunks.jsonl filter=lfs diff=lfs merge=lfs -text
